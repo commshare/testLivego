@@ -44,7 +44,7 @@ func NewStaticPullManager(listenPort int, pullinfos []configure.StaticPullInfo) 
 	}
 
 	pullmanager := &StaticPullManager{}
-
+	/*transcode configuration info to pullmanager's staticpull array*/
 	for _, pullinfo := range pullinfos {
 		staticpull := staticPullInfo{}
 
@@ -68,7 +68,7 @@ func NewStaticPullManager(listenPort int, pullinfos []configure.StaticPullInfo) 
 	pullmanager.IsStartFlag = false
 	return pullmanager
 }
-
+/*start flvpull or start rtmprelay */
 func (self *StaticPullManager) Start() error {
 	if self.IsStartFlag {
 		errString := fmt.Sprintf("StaticPullManager has already started")
@@ -88,7 +88,7 @@ func (self *StaticPullManager) Start() error {
 			log.Errorf("Unknow type=%v", reflect.TypeOf(pullobj.PullObj))
 		}
 	}
-	self.IsStartFlag = true
+	self.IsStartFlag = true /*only start once*/
 
 	return nil
 }
