@@ -41,7 +41,7 @@ func startStaticPull() {
 	if bRet && pullArray != nil && len(pullArray) > 0 {
 		StaticPulMgr = rtmprelay.NewStaticPullManager(configure.GetListenPort(), pullArray)
 		if StaticPulMgr != nil {
-			StaticPulMgr.Start()
+			StaticPulMgr.Start() /*start static pull */
 		}
 	}
 

@@ -19,7 +19,7 @@ import (
 var (
 	EmptyID = ""
 )
-
+/*manage a map of stream,the key comes from av.ReadCloser.info.key*/
 type RtmpStream struct {
 	streams cmap.ConcurrentMap //key
 }
@@ -34,7 +34,7 @@ func NewRtmpStream() *RtmpStream {
 
 func (rs *RtmpStream) IsExist(r av.ReadCloser) bool {
 	info := r.Info()
-
+	/*check a media stream exist or not */
 	i, ok := rs.streams.Get(info.Key)
 	if _, ok = i.(*Stream); ok {
 		log.Errorf("Exist already info[%v]", info)
@@ -43,7 +43,10 @@ func (rs *RtmpStream) IsExist(r av.ReadCloser) bool {
 
 	return false
 }
-
+/*use an interface as parameter
+if there is already a stream in map ,stop it ,then  copy  it to a new stream ,insert the new stream to the map , use the ReadCloser to start the stream
+if there is no stream in map ,just insert it to the map , use the ReadCloser to start the stream
+*/
 func (rs *RtmpStream) HandleReader(r av.ReadCloser) {
 	info := r.Info()
 	log.Infof("HandleReader: info[%v]", info)
@@ -55,9 +58,9 @@ func (rs *RtmpStream) HandleReader(r av.ReadCloser) {
 		id := stream.ID()
 		if id != EmptyID && id != info.UID {
 			ns := NewStream()
-			stream.Copy(ns)
-			stream = ns
-			rs.streams.Set(info.Key, ns)
+			stream.Copy(ns) /*copy from stream to ns which is a new stream*/
+			stream = ns /*to AddReader*/
+			rs.streams.Set(info.Key, ns) /*insert into map*/
 		}
 	} else {
 		stream = NewStream()
@@ -65,7 +68,7 @@ func (rs *RtmpStream) HandleReader(r av.ReadCloser) {
 		stream.info = info
 	}
 
-	stream.AddReader(r)
+	stream.AddReader(r) /*use the ReadCloser to start the stream*/
 }
 
 func (rs *RtmpStream) HandleWriter(w av.WriteCloser) {
@@ -73,16 +76,16 @@ func (rs *RtmpStream) HandleWriter(w av.WriteCloser) {
 	log.Infof("HandleWriter: info[%v], type=%v", info, reflect.TypeOf(w))
 
 	var s *Stream
-	ok := rs.streams.Has(info.Key)
+	ok := rs.streams.Has(info.Key)  /*check the stream exists or not*/
 	if !ok {
 		s = NewStream()
-		rs.streams.Set(info.Key, s)
+		rs.streams.Set(info.Key, s) /*insert*/
 		s.info = info
-	} else {
+	} else { /*exist	*/
 		item, ok := rs.streams.Get(info.Key)
 		if ok {
 			s = item.(*Stream)
-			s.AddWriter(w)
+			s.AddWriter(w)  /*update WriteCloser*/
 		}
 	}
 }
@@ -104,15 +107,15 @@ func (rs *RtmpStream) CheckAlive() {
 		}
 	}
 }
-
+/*a media stream */
 type Stream struct {
 	isStart bool
-	cache   *cache.Cache
-	r       av.ReadCloser
-	ws      cmap.ConcurrentMap
-	info    av.Info
+	cache   *cache.Cache  /*to cache data for the stream*/
+	r       av.ReadCloser  /* to read or close the stream */
+	ws      cmap.ConcurrentMap  /*the key is UID */
+	info    av.Info /*the media info about the stream*/
 }
-
+/* a wrapper of av.WriteCloser for stream*/
 type PackWriterCloser struct {
 	init bool
 	w    av.WriteCloser
@@ -139,7 +142,7 @@ func (s *Stream) ID() string {
 func (s *Stream) GetReader() av.ReadCloser {
 	return s.r
 }
-
+/*map UID to PackWriterCloser */
 func (s *Stream) GetWs() cmap.ConcurrentMap {
 	return s.ws
 }

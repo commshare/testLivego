@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"av"
-	"github.com/livego/concurrent-map"
-	log "github.com/livego/logging"
+	"concurrent-map"
+	log "logging"
 	"net"
 	"net/http"
 	"path"
@@ -32,7 +32,7 @@ var crossdomainxml = []byte(`<?xml version="1.0" ?>
 </cross-domain-policy>`)
 
 type Server struct {
-	listener net.Listener
+	listener net.Listener /*A Listener is a generic network listener for stream-oriented protocols.*/
 	conns    cmap.ConcurrentMap
 }
 
@@ -40,16 +40,20 @@ func NewServer() *Server {
 	ret := &Server{
 		conns: cmap.New(),
 	}
-	go ret.checkStop()
+	go ret.checkStop() /*check every connection in period 5 seconds*/
 	return ret
 }
 
 func (server *Server) Serve(listener net.Listener) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		server.handle(w, r)
+		server.handle(w, r) /*register a handler for  http request*/
 	})
 	server.listener = listener
+	// Serve accepts incoming HTTP connections on the listener l,
+	// creating a new service goroutine for each. 每个连接创建一个携程处理 The service goroutines
+	// read requests and then call handler to reply to them.
+	// Handler is typically nil, in which case the DefaultServeMux is used.
 	http.Serve(listener, mux)
 	return nil
 }
@@ -92,7 +96,7 @@ func (server *Server) checkStop() {
 		}
 	}
 }
-
+/*handle http request*/
 func (server *Server) handle(w http.ResponseWriter, r *http.Request) {
 	if path.Base(r.URL.Path) == "crossdomain.xml" {
 		w.Header().Set("Content-Type", "application/xml")

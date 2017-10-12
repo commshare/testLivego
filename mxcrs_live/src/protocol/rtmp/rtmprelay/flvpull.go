@@ -3,10 +3,10 @@ package rtmprelay
 import (
 	"errors"
 	"fmt"
-	"github.com/livego/av"
-	log "github.com/livego/logging"
-	"github.com/livego/protocol/httpflvclient"
-	"github.com/livego/protocol/rtmp/core"
+	"av"
+	log "logging"
+	"protocol/httpflvclient"
+	"protocol/rtmp/core"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func NewFlvPull(flvurl *string, rtmpurl *string) *FlvPull {
 		FlvUrl:      *flvurl,
 		RtmpUrl:     *rtmpurl,
 		isStart:     false,
-		csChan:      make(chan *core.ChunkStream, 1000),
+		csChan:      make(chan *core.ChunkStream, 1000), /*500 in rtmprelay */
 		flvErrChan:  make(chan int),
 		rtmpErrChan: make(chan int),
 		firstVideo:  false,

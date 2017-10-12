@@ -47,7 +47,7 @@ func (rw *RWBaser) SetPreTime() {
 
 func (rw *RWBaser) Alive() bool {
 	rw.lock.Lock()
-	b := !(time.Now().Sub(rw.PreTime) >= rw.timeout)
+	b := !(time.Now().Sub(rw.PreTime) >= rw.timeout) /*if timeout happened， return false (not alive)*/
 	rw.lock.Unlock()
 	return b
 }

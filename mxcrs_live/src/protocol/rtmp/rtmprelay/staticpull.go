@@ -3,8 +3,8 @@ package rtmprelay
 import (
 	"errors"
 	"fmt"
-	"github.com/livego/configure"
-	log "github.com/livego/logging"
+	"configure"
+	log "logging"
 	"reflect"
 )
 
