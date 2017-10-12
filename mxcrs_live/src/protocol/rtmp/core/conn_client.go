@@ -10,9 +10,9 @@ import (
 	neturl "net/url"
 	"strings"
 
-	"github.com/livego/av"
-	log "github.com/livego/logging"
-	"github.com/livego/protocol/amf"
+	"av"
+	log "logging"
+	"protocol/amf"
 )
 
 var (
@@ -53,7 +53,7 @@ type ConnClient struct {
 	IsStartFlag   bool
 }
 
-func NewConnClient() *ConnClient {
+func NewConnClient() *ConnClient { /*rtmp protocal connection client */
 	return &ConnClient{
 		transID: 1,
 		bytesw:  bytes.NewBuffer(nil),

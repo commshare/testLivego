@@ -238,18 +238,18 @@ func (self *FlvPull) Start() error {
 		return errors.New(errString)
 	}
 
-	self.rtmpclient = core.NewConnClient()
+	self.rtmpclient = core.NewConnClient() /*a client to deal with rtmp protocal connection*/
 
 	self.csChan = make(chan *core.ChunkStream)
 
-	self.isFlvHdrReady = false
+	self.isFlvHdrReady = false /*flv header is not yet ready*/
 	self.databuffer = nil
 
 	self.clean()
-	err := self.flvclient.Start(self)
+	err := self.flvclient.Start(self) /*pass a callback function to process flv data received */
 	if err != nil {
 		log.Errorf("flvclient start error:%v", err)
-		close(self.csChan)
+		close(self.csChan) /*remember to close the chan which has been made above */
 		return err
 	}
 
