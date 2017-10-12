@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/livego/av"
+	"av"
 	"github.com/livego/configure"
 	"github.com/livego/container/flv"
 	"github.com/livego/protocol/rtmp/core"

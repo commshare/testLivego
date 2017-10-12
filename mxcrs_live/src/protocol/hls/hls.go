@@ -3,7 +3,7 @@ package hls
 import (
 	"errors"
 	"fmt"
-	"github.com/livego/av"
+	"av"
 	"github.com/livego/concurrent-map"
 	log "github.com/livego/logging"
 	"net"

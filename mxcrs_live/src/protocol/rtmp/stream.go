@@ -2,18 +2,18 @@ package rtmp
 
 import (
 	"errors"
-	"github.com/livego/av"
-	"github.com/livego/concurrent-map"
-	"github.com/livego/configure"
-	log "github.com/livego/logging"
-	"github.com/livego/protocol/rtmp/cache"
-	"github.com/livego/protocol/rtmp/rtmprelay"
+	"configure"
+	log "logging"
+	"protocol/rtmp/cache"
+	"protocol/rtmp/rtmprelay"
 	"reflect"
 	//"strings"
 	"fmt"
 	//"io"
 	"os/exec"
 	"time"
+	"concurrent-map"
+	"av"
 )
 
 var (
