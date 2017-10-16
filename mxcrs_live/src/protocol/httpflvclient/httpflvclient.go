@@ -205,6 +205,7 @@ func (self *HttpFlvClient) OnRcv(conn net.Conn) {
 	needLen := FLV_HEADER_LENGTH
 	isBreak := false
 	log.Infof("rcv data from %s:", self.Url)
+	/*FLV_HEADER --> RTMP HEADER -->RTMP BODY*/
 	for {
 		if !self.IsStartFlag {
 			break
