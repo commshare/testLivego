@@ -492,7 +492,7 @@ func (connClient *ConnClient) Start(url string, method string) error {
 
 	log.Info("connection:", "local:", conn.LocalAddr(), "remote:", conn.RemoteAddr())
 
-	connClient.conn = NewConn(conn, 4*1024)
+	connClient.conn = NewConn(conn, 4*1024) /*4k*/
 
 	log.Info("HandshakeClient....")
 	if err := connClient.conn.HandshakeClient(); err != nil {

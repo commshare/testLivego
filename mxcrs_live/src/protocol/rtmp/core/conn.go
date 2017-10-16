@@ -2,8 +2,8 @@ package core
 
 import (
 	"encoding/binary"
-	"github.com/livego/utils/pio"
-	"github.com/livego/utils/pool"
+	"utils/pio"
+	"utils/pool"
 	"net"
 	"time"
 )
@@ -28,7 +28,7 @@ type Conn struct {
 	ackReceived         uint32
 	rw                  *ReadWriter
 	pool                *pool.Pool
-	chunks              map[uint32]ChunkStream
+	chunks              map[uint32]ChunkStream /*key is csid */
 }
 
 func NewConn(c net.Conn, bufferSize int) *Conn {
@@ -43,20 +43,20 @@ func NewConn(c net.Conn, bufferSize int) *Conn {
 		chunks:              make(map[uint32]ChunkStream),
 	}
 }
-
+/*chunk stream basic header : fmt csid */
 func (conn *Conn) Read(c *ChunkStream) error {
 	for {
-		h, _ := conn.rw.ReadUintBE(1)
+		h, _ := conn.rw.ReadUintBE(1) /*chunk 's basic head is 1 byte ,then csid is 6 bits*/
 		// if err != nil {
 		// 	log.Println("read from conn error: ", err)
 		// 	return err
 		// }
-		format := h >> 6
+		format := h >> 6 /*big edian : csid fmt in memory */
 		csid := h & 0x3f
 		cs, ok := conn.chunks[csid]
 		if !ok {
 			cs = ChunkStream{}
-			conn.chunks[csid] = cs
+			conn.chunks[csid] = cs  /*insert a chunk stream*/
 		}
 		cs.tmpFromat = format
 		cs.CSID = csid

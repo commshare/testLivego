@@ -119,20 +119,25 @@ func (chunkStream *ChunkStream) writeChunk(w *ReadWriter, chunkSize int) error {
 	return nil
 
 }
-
+/*
+需要注意的是，Basic Header是采用小端存储的方
+式，越往后的字节数量级越高，因此通过这3个字节每一位的值来计算CSID
+时，应该是:<第三个字节的值>x256+<第二个字节的值>+64
+*/
 func (chunkStream *ChunkStream) readChunk(r *ReadWriter, chunkSize uint32, pool *pool.Pool) error {
 	if chunkStream.remain != 0 && chunkStream.tmpFromat != 3 {
 		return fmt.Errorf("inlaid remin = %d", chunkStream.remain)
 	}
-	switch chunkStream.CSID {
+	switch chunkStream.CSID { /*0，1，2由协议保留表示特殊信息。0代表Basic Header总共要占用2个字节，CSID在［64，319］之间，1代表占用3个字节，CSID在［64，65599］之间，2代表该
+chunk是控制信息和一些命令信息，后面会有详细的介绍*/
 	case 0:
-		id, _ := r.ReadUintLE(1)
+		id, _ := r.ReadUintLE(1) /*read another 1 byte ,in little endian*/
 		chunkStream.CSID = id + 64
 	case 1:
-		id, _ := r.ReadUintLE(2)
+		id, _ := r.ReadUintLE(2) /*read another two bytes ,in little endian */
 		chunkStream.CSID = id + 64
 	}
-
+	/*Message Header的格式和长度取决于Basic Header的chunk type，共有4种不同的格式，由上面所提到的Basic Header中的fmt字段控制*/
 	switch chunkStream.tmpFromat {
 	case 0:
 		chunkStream.Format = chunkStream.tmpFromat
