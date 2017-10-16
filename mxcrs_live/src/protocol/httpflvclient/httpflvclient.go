@@ -235,7 +235,7 @@ func (self *HttpFlvClient) OnRcv(conn net.Conn) {
 
 		}
 
-		if isBreak { /*error occured above*/
+		if isBreak { /*error occured above,break the final for */
 			break
 		}
 		var rtmpHeader []byte
@@ -273,7 +273,7 @@ func (self *HttpFlvClient) OnRcv(conn net.Conn) {
 				startPos := bodyLen - needLen
 				rcvData := bodyData[startPos:]
 				retLen, err := conn.Read(rcvData)
-				if err != nil || retLen <= 0 {
+				if err != nil || retLen <= 0 { /*err occured or conn.Read no data ,break from the final for */
 					isBreak = true
 					log.Errorf("connect read rtmp body len=%d, error=%v", retLen, err)
 					break
@@ -295,7 +295,7 @@ func (self *HttpFlvClient) OnRcv(conn net.Conn) {
 		if len(rtmpHeader) > 0 && len(bodyData) > 0 {
 			rtmppacket = append(rtmppacket, rtmpHeader[4:]...)
 			rtmppacket = append(rtmppacket, bodyData[:]...)
-			if self.IsStartFlag && self.rcvHandle != nil {
+			if self.IsStartFlag && self.rcvHandle != nil { /*set  IsStartFlag to flase to stop handle data */
 				self.rcvHandle.HandleFlvData(rtmppacket, self.Url)
 			}
 		}
@@ -312,7 +312,7 @@ func (self *HttpFlvClient) Stop() {
 		log.Errorf("HttpFlvClient has already stoped, url=%s", self.Url)
 		return
 	}
-
+	/*to stop */
 	self.IsStartFlag = false
 	self.rcvHandle = nil
 	log.Infof("HttpFlvClient has stoped, url=%s", self.Url)
