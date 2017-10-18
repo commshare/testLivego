@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"github.com/livego/av"
+	"av"
 	"sync"
 )
 

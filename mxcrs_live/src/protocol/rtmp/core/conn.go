@@ -10,9 +10,9 @@ import (
 
 const (
 	_ = iota
-	idSetChunkSize
-	idAbortMessage
-	idAck
+	idSetChunkSize /*Set Chunk Size(Message Type ID=1):*/
+	idAbortMessage /*Abort Message(Message Type ID=2)*/
+	idAck  /*Acknowledgement(Message Type ID=3)*/
 	idUserControlMessages
 	idWindowAckSize
 	idSetPeerBandwidth
@@ -28,7 +28,7 @@ type Conn struct { /*a wrapper for network connection */
 	ackReceived         uint32
 	rw                  *ReadWriter
 	pool                *pool.Pool
-	chunks              map[uint32]ChunkStream
+	chunks              map[uint32]ChunkStream /*key is csid */
 }
 
 func NewConn(c net.Conn, bufferSize int) *Conn {
@@ -43,20 +43,20 @@ func NewConn(c net.Conn, bufferSize int) *Conn {
 		chunks:              make(map[uint32]ChunkStream),
 	}
 }
-
+/*chunk stream basic header : fmt csid */
 func (conn *Conn) Read(c *ChunkStream) error {
 	for {
-		h, _ := conn.rw.ReadUintBE(1)
+		h, _ := conn.rw.ReadUintBE(1) /*chunk 's basic head is 1 byte ,then csid is 6 bits*/
 		// if err != nil {
 		// 	log.Println("read from conn error: ", err)
 		// 	return err
 		// }
-		format := h >> 6
+		format := h >> 6 /*big edian : csid fmt in memory */
 		csid := h & 0x3f
 		cs, ok := conn.chunks[csid]
 		if !ok {
 			cs = ChunkStream{}
-			conn.chunks[csid] = cs
+			conn.chunks[csid] = cs  /*insert a chunk stream*/
 		}
 		cs.tmpFromat = format
 		cs.CSID = csid
@@ -66,11 +66,11 @@ func (conn *Conn) Read(c *ChunkStream) error {
 		}
 		conn.chunks[csid] = cs
 		if cs.full() {
-			*c = cs
-			break
+			*c = cs /*we got this chunk stream */
+			break /*break for loop */
 		}
 	}
-
+	/*Protocol Control Message*/
 	conn.handleControlMsg(c)
 
 	conn.ack(c.Length)
@@ -127,6 +127,8 @@ func (conn *Conn) handleControlMsg(c *ChunkStream) {
 	if c.TypeID == idSetChunkSize {
 		conn.remoteChunkSize = binary.BigEndian.Uint32(c.Data)
 	} else if c.TypeID == idWindowAckSize {
+		/*当收到对端的消息大小等于窗口大小（Window Size）时接受端要回馈一个ACK给发送端告知对方可以继续发送数据。窗口大小就是指收到接受端返回
+的ACK前最多可以发送的字节数量，返回的ACK中会带有从发送上一个ACK后接收到的字节数*/
 		conn.remoteWindowAckSize = binary.BigEndian.Uint32(c.Data)
 	}
 }

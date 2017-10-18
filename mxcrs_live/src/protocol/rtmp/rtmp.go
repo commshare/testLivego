@@ -5,12 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"av"
-	"github.com/livego/configure"
-	"github.com/livego/container/flv"
-	"github.com/livego/protocol/rtmp/core"
+	"configure"
+	"container/flv"
+	"protocol/rtmp/core"
 	//"github.com/livego/protocol/rtmp/rtmprelay"
-	log "github.com/livego/logging"
-	"github.com/livego/utils/uid"
+	log "logging"
+	"utils/uid"
 	"net"
 	"net/url"
 	"os/exec"
@@ -74,7 +74,7 @@ type Server struct {
 func NewRtmpServer(h av.Handler, getter av.GetWriter) *Server {
 	return &Server{
 		handler: h,
-		getter:  getter,
+		getter:  getter, /*use hlsserver as a getter or writer ？*/
 	}
 }
 
@@ -147,7 +147,7 @@ func (s *Server) handleConn(conn *core.Conn) error {
 		s.handler.HandleReader(reader)
 		log.Infof("new publisher: %v", reader.Info())
 
-		if s.getter != nil {
+		if s.getter != nil { /*hlsserver*/
 			writeType := reflect.TypeOf(s.getter)
 			log.Infof("handleConn:writeType=%v", writeType)
 			writer := s.getter.GetWriter(reader.Info())
