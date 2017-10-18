@@ -4,7 +4,7 @@ import "bytes"
 
 const (
 	cache_max_frames byte = 6
-	audio_cache_len  int  = 10 * 1024
+	audio_cache_len  int  = 10 * 1024 /*10k*/
 )
 
 type audioCache struct {
@@ -12,7 +12,8 @@ type audioCache struct {
 	num         byte
 	offset      int
 	pts         uint64
-	buf         *bytes.Buffer
+	buf         *bytes.Buffer /*A Buffer is a variable-sized buffer of bytes with Read and Write methods.
+ The zero value for Buffer is an empty buffer ready to use.*/
 }
 
 func newAudioCache() *audioCache {

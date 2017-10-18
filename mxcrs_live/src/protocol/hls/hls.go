@@ -33,7 +33,7 @@ var crossdomainxml = []byte(`<?xml version="1.0" ?>
 
 type Server struct {
 	listener net.Listener /*A Listener is a generic network listener for stream-oriented protocols.*/
-	conns    cmap.ConcurrentMap
+	conns    cmap.ConcurrentMap /*value is Source */
 }
 
 func NewServer() *Server {
@@ -47,7 +47,7 @@ func NewServer() *Server {
 func (server *Server) Serve(listener net.Listener) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		server.handle(w, r) /*register a handler for  http request*/
+		server.handle(w, r) /*register a handler for  http request :  process .m3u8 and .ts request */
 	})
 	server.listener = listener
 	// Serve accepts incoming HTTP connections on the listener l,
@@ -62,13 +62,13 @@ func (server *Server) GetListener() net.Listener {
 	return server.listener
 }
 
-func (server *Server) GetWriter(info av.Info) av.WriteCloser {
+func (server *Server) GetWriter(info av.Info) av.WriteCloser { /*Source is a WriteCloser */
 	var s *Source
 	ok := server.conns.Has(info.Key)
 	if !ok {
 		log.Info("new hls source")
 		s = NewSource(info)
-		server.conns.Set(info.Key, s)
+		server.conns.Set(info.Key, s) /*create a new Source and insert it to map */
 	} else {
 		v, _ := server.conns.Get(info.Key)
 		s = v.(*Source)
@@ -106,7 +106,7 @@ func (server *Server) handle(w http.ResponseWriter, r *http.Request) {
 	switch path.Ext(r.URL.Path) {
 	case ".m3u8":
 		key, _ := server.parseM3u8(r.URL.Path)
-		conn := server.getConn(key)
+		conn := server.getConn(key) /*return a Source */
 		if conn == nil {
 			//log.Error("m3u8 url", r.URL.Path, "key", key, "connection do not exist.")
 			http.Error(w, ErrNoPublisher.Error(), http.StatusForbidden)
@@ -148,7 +148,7 @@ func (server *Server) handle(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "video/mp2ts")
 		w.Header().Set("Content-Length", strconv.Itoa(len(item.Data)))
-		w.Write(item.Data)
+		w.Write(item.Data) /*write []byte* to the connection */
 	}
 }
 

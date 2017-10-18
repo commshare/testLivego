@@ -20,7 +20,8 @@ type TSCacheItem struct {
 	id   string
 	num  int
 	lock sync.RWMutex
-	ll   *list.List
+	/*the element is key of map lm */
+	ll   *list.List /*List represents a doubly linked list. The zero value for List is an empty list ready to use.*/
 	lm   map[string]TSItem
 }
 
@@ -52,7 +53,7 @@ func (tcCacheItem *TSCacheItem) GenM3U8PlayList() ([]byte, error) {
 			}
 			if !getSeq {
 				getSeq = true
-				seq = v.SeqNum
+				seq = v.SeqNum /*a sequence number of a tsitem */
 			}
 			fmt.Fprintf(m3u8body, "#EXTINF:%.3f,\n%s\n", float64(v.Duration)/float64(1000), v.Name)
 		}

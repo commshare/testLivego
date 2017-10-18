@@ -188,7 +188,7 @@ type StaticsBW struct {
 
 	LastTimestamp int64
 }
-
+/*an implement of av.WriterCloser */
 type VirWriter struct {
 	Uid    string
 	closed bool
