@@ -5,9 +5,9 @@ type Pool struct {
 	buf []byte
 }
 
-const maxpoolsize = 1024 * 1024
+const maxpoolsize = 1024 * 1024 /*1M byte*/
 
-func (pool *Pool) Get(size int) []byte {
+func (pool *Pool) Get(size int) []byte { /**/
 	if maxpoolsize-pool.pos < size {
 		pool.pos = 0
 		pool.buf = make([]byte, maxpoolsize)

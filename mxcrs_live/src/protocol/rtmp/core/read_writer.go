@@ -10,9 +10,9 @@ type ReadWriter struct {
 	readError  error
 	writeError error
 }
-
+/*io.ReadWriter is an interface*/
 func NewReadWriter(rw io.ReadWriter, bufSize int) *ReadWriter {
-	return &ReadWriter{
+	return &ReadWriter{ /* NewReadWriter allocates a new ReadWriter that dispatches to r and w.*/
 		ReadWriter: bufio.NewReadWriter(bufio.NewReaderSize(rw, bufSize), bufio.NewWriterSize(rw, bufSize)),
 	}
 }

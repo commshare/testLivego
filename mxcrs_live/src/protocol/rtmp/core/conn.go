@@ -2,8 +2,8 @@ package core
 
 import (
 	"encoding/binary"
-	"github.com/livego/utils/pio"
-	"github.com/livego/utils/pool"
+	"utils/pio"
+	"utils/pool"
 	"net"
 	"time"
 )
@@ -18,7 +18,7 @@ const (
 	idSetPeerBandwidth
 )
 
-type Conn struct {
+type Conn struct { /*a wrapper for network connection */
 	net.Conn
 	chunkSize           uint32
 	remoteChunkSize     uint32

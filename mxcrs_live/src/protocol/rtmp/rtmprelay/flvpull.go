@@ -232,6 +232,7 @@ func (self *FlvPull) Start() error {
 		errString := fmt.Sprintf("FlvPull(%s->%s) has already started.", self.FlvUrl, self.RtmpUrl)
 		return errors.New(errString)
 	}
+	/*a client to recv http flv data */
 	self.flvclient = httpflvclient.NewHttpFlvClient(self.FlvUrl)
 	if self.flvclient == nil {
 		errString := fmt.Sprintf("FlvPull(%s) error", self.FlvUrl)

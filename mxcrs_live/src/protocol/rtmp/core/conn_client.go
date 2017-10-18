@@ -56,7 +56,7 @@ type ConnClient struct {
 func NewConnClient() *ConnClient { /*rtmp protocal connection client */
 	return &ConnClient{
 		transID: 1,
-		bytesw:  bytes.NewBuffer(nil),
+		bytesw:  bytes.NewBuffer(nil), /*w TODO Why nil ?*/
 		encoder: &amf.Encoder{},
 		decoder: &amf.Decoder{},
 	}
@@ -445,7 +445,7 @@ func (connClient *ConnClient) Start(url string, method string) error {
 	path := strings.TrimLeft(u.Path, "/")
 	ps := strings.SplitN(path, "/", 2)
 	if len(ps) != 2 {
-		return fmt.Errorf("u path err: %s", path)
+		return fmt.Errorf("u path err: %s", path) /*error type */
 	}
 	connClient.app = ps[0]
 	connClient.title = ps[1]
