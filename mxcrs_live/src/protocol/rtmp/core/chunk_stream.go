@@ -29,9 +29,9 @@ func (chunkStream *ChunkStream) full() bool {
 }
 
 func (chunkStream *ChunkStream) new(pool *pool.Pool) {
-	chunkStream.got = false
+	chunkStream.got = false /*not receive all chunk data*/
 	chunkStream.index = 0
-	chunkStream.remain = chunkStream.Length
+	chunkStream.remain = chunkStream.Length /*init value ？*/
 	chunkStream.Data = pool.Get(int(chunkStream.Length))
 }
 
@@ -181,11 +181,21 @@ chunk是控制信息和一些命令信息，后面会有详细的介绍*/
 	case 3:
 		if chunkStream.remain == 0 {
 			switch chunkStream.Format {
+			/*0字节！！！好吧，它表示这个chunk的Message Header和上一个是完
+全相同的，自然就不用再传输一遍了。当它跟在Type＝0的chunk后面
+时，表示和前一个chunk的时间戳都是相同的。什么时候连时间戳都相同
+呢？就是一个Message拆分成了多个chunk，这个chunk和上一个chunk
+同属于一个Message。*/
 			case 0:
 				if chunkStream.exted {
 					timestamp, _ := r.ReadUintBE(4)
 					chunkStream.Timestamp = timestamp
 				}
+				/*而当它跟在Type＝1或者Type＝2的chunk后面
+时，表示和前一个chunk的时间戳的差是相同的。比如第一个chunk的
+Type＝0，timestamp＝100，第二个chunk的Type＝2，timestamp
+delta＝20，表示时间戳为100+20=120，第三个chunk的Type＝3，表
+示timestamp delta＝20，时间戳为120+20=140*/
 			case 1, 2:
 				var timedet uint32
 				if chunkStream.exted {
@@ -222,7 +232,7 @@ chunk是控制信息和一些命令信息，后面会有详细的介绍*/
 	}
 	chunkStream.index += uint32(size)
 	chunkStream.remain -= uint32(size)
-	if chunkStream.remain == 0 {
+	if chunkStream.remain == 0 {  /*not data left in the chunk data */
 		chunkStream.got = true
 	}
 
