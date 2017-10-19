@@ -57,7 +57,7 @@ func U32LE(b []byte) (i uint32) {
 	i |= uint32(b[0])
 	return
 }
-
+/*the input []byte has 4 bytes , treat them as BE ,so b[0] is the biggest*/
 func U32BE(b []byte) (i uint32) {
 	i = uint32(b[0])
 	i <<= 8

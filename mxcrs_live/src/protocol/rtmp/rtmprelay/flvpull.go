@@ -100,7 +100,7 @@ func (self *FlvPull) HandleFlvData(packet []byte, srcUrl string) error {
 	} else {
 		cs.TypeID = uint32(messagetype)
 	}
-
+	/*12 bytes header*/
 	cs.Data = packet[11:]
 	cs.Length = uint32(payloadLen)
 	cs.StreamID = uint32(streamid)

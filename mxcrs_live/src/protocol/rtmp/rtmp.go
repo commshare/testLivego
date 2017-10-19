@@ -87,11 +87,11 @@ func (s *Server) Serve(listener net.Listener) (err error) {
 
 	for {
 		var netconn net.Conn
-		netconn, err = listener.Accept()
+		netconn, err = listener.Accept() /*Accept waits for and returns the next connection to the listener.*/
 		if err != nil {
 			return
 		}
-
+		/*netconn： is a generic stream-oriented network connection.*/
 		conn := core.NewConn(netconn, 4*1024)
 		//log.Info("new client, connect remote:", conn.RemoteAddr().String(),
 		//	"local:", conn.LocalAddr().String())
@@ -440,7 +440,7 @@ func (v *VirReader) Read(p *av.Packet) (err error) {
 	p.IsVideo = cs.TypeID == av.TAG_VIDEO
 	p.IsMetadata = cs.TypeID == av.TAG_SCRIPTDATAAMF0 || cs.TypeID == av.TAG_SCRIPTDATAAMF3
 	p.StreamID = cs.StreamID
-	p.Data = cs.Data
+	p.Data = cs.Data /*chunk stream data */
 	p.TimeStamp = cs.Timestamp
 
 	v.SaveStatics(p.StreamID, uint64(len(p.Data)), p.IsVideo)

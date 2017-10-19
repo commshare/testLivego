@@ -6,7 +6,7 @@ import (
 )
 
 type ReadWriter struct {
-	*bufio.ReadWriter
+	*bufio.ReadWriter /*go lib */
 	readError  error
 	writeError error
 }

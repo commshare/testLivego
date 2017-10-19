@@ -46,20 +46,23 @@ func NewConn(c net.Conn, bufferSize int) *Conn {
 /*chunk stream basic header : fmt csid */
 func (conn *Conn) Read(c *ChunkStream) error {
 	for {
+		/*the first byte in BE is the fix size basic header : basic header是此包的唯一不变的部分,并且由一个独立的byte构成,这其中包括了2个作重要的标志位,chunk type以及stream id.chunk type决定了消息头的编码格式,该字段的长度完全依赖于stream id,stream id是一个可变长的字段.*/
 		h, _ := conn.rw.ReadUintBE(1) /*chunk 's basic head is 1 byte ,then csid is 6 bits*/
 		// if err != nil {
 		// 	log.Println("read from conn error: ", err)
 		// 	return err
 		// }
-		format := h >> 6 /*big edian : csid fmt in memory */
-		csid := h & 0x3f
+		format := h >> 6 /*2 Bits chunk type  */
+		csid := h & 0x3f /*chunk stream id : 6 bit*/
 		cs, ok := conn.chunks[csid]
 		if !ok {
 			cs = ChunkStream{}
-			conn.chunks[csid] = cs  /*insert a chunk stream*/
+			conn.chunks[csid] = cs  /* create and insert a chunk stream*/
 		}
-		cs.tmpFromat = format
-		cs.CSID = csid
+		/*read basic header */
+		cs.tmpFromat = format  /*fmt : chunk type*/
+		cs.CSID = csid  /*stream id*/
+		/*read message header and data*/
 		err := cs.readChunk(conn.rw, conn.remoteChunkSize, conn.pool)
 		if err != nil {
 			return err
