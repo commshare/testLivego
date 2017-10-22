@@ -70,13 +70,13 @@ func (self *FlvPull) HandleFlvData(packet []byte, srcUrl string) error {
 	var cs *core.ChunkStream
 
 	cs = &core.ChunkStream{}
-	/*TAG HEADER + TAG DATA */
-	messagetype := packet[0]
-	payloadLen := int(packet[1])<<16 + int(packet[2])<<8 + int(packet[3]) /*BE ?*/
-	timestamp := int(packet[4])<<16 + int(packet[5])<<8 + int(packet[6]) + int(packet[7])<<24
-	streamid := int(packet[8])<<16 + int(packet[9])<<8 + int(packet[10])
+	/*TAG HEADER 9 + TAG DATA */
+	messagetype := packet[0] /*tag type */
+	payloadLen := int(packet[1])<<16 + int(packet[2])<<8 + int(packet[3]) /*BE ? 2 3 4 byte , this tag 's size 无符号24位整型数值*/
+	timestamp := int(packet[4])<<16 + int(packet[5])<<8 + int(packet[6]) + int(packet[7])<<24 /*5 6 7 byte , cur tag timestamp in ms , 第一个Tag的时间戳总为0*/
+	streamid := int(packet[8])<<16 + int(packet[9])<<8 + int(packet[10])/*第9-11字节：UI24类型，表示Stream ID，总是0*/
 
-	if messagetype == 0x09 {
+	if messagetype == 0x09 { /*vdeo */
 		/*
 			if packet[11] == 0x17 && packet[12] == 0x00 {
 				//log.Printf("it's pps and sps: messagetype=%d, payloadlen=%d, timestamp=%d, streamid=%d", messagetype, payloadLen, timestamp, streamid)
