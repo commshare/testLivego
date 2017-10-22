@@ -41,9 +41,9 @@ func WriteByte(w io.Writer, b byte) (err error) {
 func WriteBytes(w io.Writer, bytes []byte) (int, error) {
 	return w.Write(bytes)
 }
-
+/*read one byte by io.Reader r */
 func ReadByte(r io.Reader) (byte, error) {
-	bytes, err := ReadBytes(r, 1)
+	bytes, err := ReadBytes(r, 1) /*read one byte*/
 	if err != nil {
 		return 0x00, err
 	}
@@ -54,7 +54,7 @@ func ReadByte(r io.Reader) (byte, error) {
 func ReadBytes(r io.Reader, n int) ([]byte, error) {
 	bytes := make([]byte, n)
 
-	m, err := r.Read(bytes)
+	m, err := r.Read(bytes) /*go lib */
 	if err != nil {
 		return bytes, err
 	}

@@ -104,7 +104,7 @@ func WriteFlvFile(data []byte, length int) error {
 		return err
 	}
 
-	if ret {
+	if ret { /*exist : open then  write  defer close */
 		filehandle, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) //打开文件
 		if err != nil {
 			log.Errorf("Open file %s error=%v", filename, err)
@@ -113,8 +113,8 @@ func WriteFlvFile(data []byte, length int) error {
 
 		defer filehandle.Close()
 		//log.Printf("writeFlvFile(%s): open and write %d bytes", filename, length)
-		filehandle.Write(data[:length])
-	} else {
+		filehandle.Write(data[:length]) /*go lib ,just write []byte to a disk file */
+	} else { /* not exist : create then write ,defer close */
 		filehandle, err := os.Create(filename)
 		if err != nil {
 			log.Errorf("Create file %s error=%v", filename, err)
@@ -189,7 +189,7 @@ func (self *HttpFlvClient) Start(rcvHandle FlvRcvCallback) error { /*only start 
 
 	self.rcvHandle = rcvHandle
 	self.IsStartFlag = true  /*http flv client start successfully*/
-	go self.OnRcv(conn)  /*go to a routine to process the connection which had been connected ok above*/
+	go self.OnRcv(conn)  /*go  a routine to process the connection which had been connected ok above*/
 
 	return nil
 }
@@ -241,6 +241,7 @@ func (self *HttpFlvClient) OnRcv(conn net.Conn) {
 		var rtmpHeader []byte
 		if currentState == READ_RTMP_HEADER_STATE {
 			rtmpHeader = make([]byte, needLen)
+			/*rtmp header ß*/
 			for {
 				startPos := RTMP_MESSAGE_HEADER_LENGTH - needLen
 				rcvData := rtmpHeader[startPos:]
@@ -253,7 +254,7 @@ func (self *HttpFlvClient) OnRcv(conn net.Conn) {
 				//log.Infof("state=READ_RTMP_HEADER_STATE flv read data:%v", rtmpHeader)
 				needLen -= retLen
 				if needLen <= 0 {
-					bodyLenByte := rtmpHeader[5:8]
+					bodyLenByte := rtmpHeader[5:8] /*3 bytes*/
 					bodyLen := int(bodyLenByte[0])<<16 + int(bodyLenByte[1])<<8 + int(bodyLenByte[2])
 					needLen = bodyLen
 					currentState = READ_RTMP_BODY_START

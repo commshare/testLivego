@@ -70,8 +70,9 @@ func (self *FlvPull) HandleFlvData(packet []byte, srcUrl string) error {
 	var cs *core.ChunkStream
 
 	cs = &core.ChunkStream{}
+	/*TAG HEADER + TAG DATA */
 	messagetype := packet[0]
-	payloadLen := int(packet[1])<<16 + int(packet[2])<<8 + int(packet[3])
+	payloadLen := int(packet[1])<<16 + int(packet[2])<<8 + int(packet[3]) /*BE ?*/
 	timestamp := int(packet[4])<<16 + int(packet[5])<<8 + int(packet[6]) + int(packet[7])<<24
 	streamid := int(packet[8])<<16 + int(packet[9])<<8 + int(packet[10])
 

@@ -7,7 +7,7 @@ import (
 
 // amf0 polymorphic router
 func (d *Decoder) DecodeAmf0(r io.Reader) (interface{}, error) {
-	marker, err := ReadMarker(r)
+	marker, err := ReadMarker(r) /*return a byte(means go lib type byte )*/
 	if err != nil {
 		return nil, err
 	}

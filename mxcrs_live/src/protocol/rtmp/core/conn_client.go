@@ -75,7 +75,7 @@ func (connClient *ConnClient) readRespMsg() error {
 	var err error
 	var rc ChunkStream
 	for {
-		if err = connClient.conn.Read(&rc); err != nil {
+		if err = connClient.conn.Read(&rc); err != nil { /*client read a chunk stream from connection */
 			return err
 		}
 		if err != nil && err != io.EOF {
@@ -83,7 +83,7 @@ func (connClient *ConnClient) readRespMsg() error {
 		}
 		switch rc.TypeID {
 		case 20, 17:
-			r := bytes.NewReader(rc.Data)
+			r := bytes.NewReader(rc.Data) /*NewReader returns a new Reader reading from rc.Data*/
 			vs, _ := connClient.decoder.DecodeBatch(r, amf.AMF0)
 
 			log.Infof("readRespMsg: vs=%v", vs)
