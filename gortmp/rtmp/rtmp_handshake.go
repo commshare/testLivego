@@ -69,20 +69,21 @@ func ReadBuf(r io.Reader, length int) (buf []byte) {
 	io.ReadFull(r, buf)
 	return
 }
-
+/*1. 客户端发送c0c1到服务端，等待s1，然后发c2，等待s2，然后发其他数据
+2.  服务端 等待c0，然后发s0和s1，等待c1，然后发s2，等待c2，然后发其他数据*/
 func handshake(brw *bufio.ReadWriter) error {
-	C0C1 := ReadBuf(brw, 1536+1)
-	if C0C1[0] != RTMP_HANDSHAKE_VERSION {
+	C0C1 := ReadBuf(brw, 1536+1) /*c0和s0都是1个字节，c1和s1是1536个字节*/
+	if C0C1[0] != RTMP_HANDSHAKE_VERSION { /*这个是c0，8 bit的整型表示版本号*/
 		return errors.New("C0 Error")
 	}
 
-	if len(C0C1[1:]) != 1536 {
+	if len(C0C1[1:]) != 1536 { /*这是c1，看来实际上客户端经常会一起发c0和c1*/
 		return errors.New("C1 Error")
 	}
 
-	C1 := make([]byte, 1536)
+	C1 := make([]byte, 1536) /*c1为啥要单独copy出来呢*/
 	copy(C1, C0C1[1:])
-	temp := C1[4] & 0xff
+	temp := C1[4] & 0xff/*第五个字节是zero位，如果全是0就是简单握手*/
 
 	if temp == 0 {
 		return simple_handshake(brw, C1)
@@ -90,20 +91,24 @@ func handshake(brw *bufio.ReadWriter) error {
 
 	return complex_handshake(brw, C1)
 }
-
+/*s2和c2是ack包，c1构造s2，s1构造c2*/
 func simple_handshake(brw *bufio.ReadWriter, C1 []byte) error {
-	var S0 byte
-	S0 = 0x03
-	S1 := make([]byte, 1536-4)
-	S2 := C1
-	S1_Time := uint32(0)
+	var S0 byte /*c0 and s0 is one byte */
+	S0 = 0x03 /*rtmp version selected by server is 3 */
+	S1 := make([]byte, 1536-4) /*c1 and s1 1536，s1用于构造c2*/
+	S2 := C1 /*c1用于构造s2*/
+	S1_Time := uint32(0) /*This field contains a timestamp, which SHOULD be used as the epoch
+     for all future chunks sent from this endpoint. This may be 0, or
+     some arbitrary value. To synchronize multiple chunkstreams, the
+     endpoint may wish to send the current value of the other
+     chunkstream's timestamp.*/
 
 	buf := new(bytes.Buffer)
 	buf.WriteByte(S0)
-	binary.Write(buf, binary.BigEndian, S1_Time)
+	binary.Write(buf, binary.BigEndian, S1_Time) /*大端时间戳*/
 	buf.Write(S1)
 	buf.Write(S2)
-
+	/*同时发送s0、s1和s2*/
 	brw.Write(buf.Bytes())
 	brw.Flush() // Don't forget to flush
 

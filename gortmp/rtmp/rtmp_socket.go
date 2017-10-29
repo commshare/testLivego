@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	SEND_CHUNK_SIZE_MESSAGE         = "Send Chunk Size Message"
+	SEND_CHUNK_SIZE_MESSAGE         = "Send Chunk Size Message" /*控制消息：设置chunk大小，可配置chunk size*/
 	SEND_ACK_MESSAGE                = "Send Acknowledgement Message"
 	SEND_ACK_WINDOW_SIZE_MESSAGE    = "Send Window Acknowledgement Size Message"
 	SEND_SET_PEER_BANDWIDTH_MESSAGE = "Send Set Peer Bandwidth Message"

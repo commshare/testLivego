@@ -52,7 +52,7 @@ func (s *Server) ListenAndServer() error {
 
 func (s *Server) loop(listener net.Listener) error {
 	defer listener.Close()
-	var tempDelay time.Duration
+	var tempDelay time.Duration /*delay time when error occurred*/
 
 	for {
 		conn, err := listener.Accept()
@@ -72,10 +72,10 @@ func (s *Server) loop(listener net.Listener) error {
 			}
 			return err
 		}
-
+		/*no error ,to serve rtmp */
 		tempDelay = 0
-		c := newRtmpNetConnect(conn, s)
-		go s.serve(c)
+		c := newRtmpNetConnect(conn, s) /*create a rtmp network connection for server */
+		go s.serve(c) /*serve the connection */
 	}
 }
 
@@ -89,7 +89,7 @@ func (s *Server) serve(rtmpNetConn *RtmpNetConnection) {
 		rtmpNetConn.Close()
 		return
 	}
-
+	/*进入chunking阶段，连接会服用一个或者多个chunk stream*/
 	// NetConnect
 	// 1. 客户端发送命令消息中的“连接”(connect)到服务器,请求与一个服务应用实例建立连接
 	// 2. 服务器接收到连接命令消息后,发送确认窗口大小(Window Acknowledgement Size)协议消息到客户端,同时连接到连接命令中提到的应用程序.
