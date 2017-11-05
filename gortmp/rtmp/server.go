@@ -89,7 +89,7 @@ func (s *Server) serve(rtmpNetConn *RtmpNetConnection) {
 		rtmpNetConn.Close()
 		return
 	}
-	/*进入chunking阶段，连接会服用一个或者多个chunk stream*/
+	/*进入chunking阶段，连接会复用一个或者多个chunk stream*/
 	// NetConnect
 	// 1. 客户端发送命令消息中的“连接”(connect)到服务器,请求与一个服务应用实例建立连接
 	// 2. 服务器接收到连接命令消息后,发送确认窗口大小(Window Acknowledgement Size)协议消息到客户端,同时连接到连接命令中提到的应用程序.
@@ -162,11 +162,11 @@ func (s *Server) serve(rtmpNetConn *RtmpNetConnection) {
 		rtmpNetConn.Close()
 		return
 	}
-
+	/*已经完全建立好连接*/
 	rtmpNetConn.connected = true
 
 	/* NetStream */
-
+	/*下面就开始收发音视频？*/
 	handler := s.Handler
 	newNetStream(rtmpNetConn, handler).msgLoopProc()
 }

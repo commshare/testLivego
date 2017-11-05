@@ -78,7 +78,7 @@ type RtmpMessage interface {
 	String() string
 }
 
-type RtmpHeader ChunkHeader
+type RtmpHeader ChunkHeader /*最右边的ChunkHeader是一个类型*/
 type RtmpBody ChunkBody
 
 func newRtmpHeader(chunkID uint32, timestamp uint32, messageLength uint32, messageType byte, messageStreamID uint32, extendTimestamp uint32) *RtmpHeader {
@@ -91,7 +91,7 @@ func newRtmpHeader(chunkID uint32, timestamp uint32, messageLength uint32, messa
 	head.ChunkExtendedTimestamp.ExtendTimestamp = extendTimestamp
 	return head
 }
-
+/*返回一个新new出来的结构体对象*/
 func (h *RtmpHeader) Clone() *RtmpHeader {
 	head := new(RtmpHeader)
 	head.ChunkBasicHeader.ChunkStreamID = h.ChunkBasicHeader.ChunkStreamID
@@ -181,7 +181,7 @@ func GetRtmpMessage(head *RtmpHeader, body *RtmpBody) RtmpMessage {
 					m.Millisecond = util.BigEndian.Uint32(eventdata[4:])
 					return m
 				}
-			case RTMP_USER_STREAM_IS_RECORDED: // 服务端发送本事件通知客户端,该流是一个录制流.4字节的事件数据表示录制流的.
+			case RTMP_USER_STREAM_IS_RECORDED: // 服务端发送本事件通知客户端,该流是一个录制流.4字节的事件数据表示录制流的. /*TODO 录制流是什么？*/
 				{
 					m := newStreamIsRecordedMessage() // UserControlMessage + StreamId(4 Bytes)
 					m.RtmpHeader = head

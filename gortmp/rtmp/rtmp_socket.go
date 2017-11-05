@@ -71,13 +71,13 @@ func newPlayResponseMessageData(streamid uint32, code, level string) (amfobj AMF
 
 	return
 }
-
+/*读取所有对应的chunk，拼接为一个完整的message 返回*/
 func recvMessage(conn *RtmpNetConnection) (msg RtmpMessage, err error) {
-	if conn.readSeqNum >= conn.bandwidth {
-		conn.totalRead += conn.readSeqNum
+	if conn.readSeqNum >= conn.bandwidth { /*当前读的字节 >= 带宽 */
+		conn.totalRead += conn.readSeqNum /*计算总共读取的字节数目*/
 		conn.readSeqNum = 0
 		//sendAck(conn, conn.totalRead)
-		sendMessage(conn, SEND_ACK_MESSAGE, conn.totalRead)
+		sendMessage(conn, SEND_ACK_MESSAGE, conn.totalRead) /*TODO 发送了这个消息会怎样？*/
 	}
 
 	msg, err = readChunk(conn)
@@ -695,15 +695,15 @@ func sendAVMessage(conn *RtmpNetConnection, av *AVPacket, isAudio bool, isFirst 
 }
 
 func readChunk(conn *RtmpNetConnection) (msg RtmpMessage, err error) {
-	head, err := conn.br.ReadByte()
+	head, err := conn.br.ReadByte() /*一次只读取一个字节啊*/
 	conn.readSeqNum += 1
 	if err != nil {
 		return nil, err
 	}
 
 	cbh := new(ChunkBasicHeader)
-	cbh.ChunkStreamID = uint32(head & 0x3f) // 0011 1111
-	cbh.ChunkType = (head & 0xc0) >> 6      // 1100 0000
+	cbh.ChunkStreamID = uint32(head & 0x3f) // 0011 1111 /*后六位*/
+	cbh.ChunkType = (head & 0xc0) >> 6      // 1100 0000 /*前两位*/
 
 	// 如果块流ID为0,1的话,就需要计算.
 	cbh.ChunkStreamID, err = readChunkStreamID(conn, cbh.ChunkStreamID)
@@ -711,8 +711,10 @@ func readChunk(conn *RtmpNetConnection) (msg RtmpMessage, err error) {
 		return nil, errors.New("get chunk stream id error :" + err.Error())
 	}
 
+	/*这是看map某个key有无value啊，无就插入*/
 	if conn.rtmpHeader[cbh.ChunkStreamID] == nil {
 		//conn.rtmpHeader[cbh.ChunkStreamID] = &RtmpHeader{ChunkBasicHeader.ChunkType: cbh.ChunkType, ChunkBasicHeader.ChunkStreamID: cbh.ChunkStreamID}
+		/*这是一个map，专门存储header*/
 		conn.rtmpHeader[cbh.ChunkStreamID] = &RtmpHeader{ChunkBasicHeader: ChunkBasicHeader{ChunkType: cbh.ChunkType, ChunkStreamID: cbh.ChunkStreamID}}
 	}
 
@@ -728,12 +730,12 @@ func readChunk(conn *RtmpNetConnection) (msg RtmpMessage, err error) {
 	}
 
 	if conn.incompleteRtmpBody[cbh.ChunkStreamID] == nil {
-		conn.incompleteRtmpBody[cbh.ChunkStreamID] = make([]byte, 0)
+		conn.incompleteRtmpBody[cbh.ChunkStreamID] = make([]byte, 0) /*body是一个字节数组，这是字节数组分配内存的初始化方式*/
 	}
 
-	markRead := uint32(len(conn.incompleteRtmpBody[cbh.ChunkStreamID]))
-	needRead := uint32(conn.readChunkSize)
-	unRead := chunkHead.ChunkMessgaeHeader.MessageLength - markRead
+	markRead := uint32(len(conn.incompleteRtmpBody[cbh.ChunkStreamID])) /*	TODO ？ 这个值现在是0么？*/
+	needRead := uint32(conn.readChunkSize) /*协议交互设置的大小,这个当最大大小看待*/
+	unRead := chunkHead.ChunkMessgaeHeader.MessageLength - markRead /*TODO 从chunk message的头里读取到的消息长度 - markread*/
 	if unRead < needRead {
 		needRead = unRead
 	}
@@ -745,25 +747,27 @@ func readChunk(conn *RtmpNetConnection) (msg RtmpMessage, err error) {
 	}
 
 	conn.readSeqNum += uint32(n)
-
+	/*这个...是一种什么用法呢？ */
 	buf = append(conn.incompleteRtmpBody[cbh.ChunkStreamID], buf...)
 	conn.incompleteRtmpBody[cbh.ChunkStreamID] = buf
 
 	// 如果读完了一个完整的块,那么就返回这个消息,没读完继续递归读块.
+	/*左边是已经读取的，右边是总共要读取的块的大小*/
 	if uint32(len(conn.incompleteRtmpBody[cbh.ChunkStreamID])) == chunkHead.ChunkMessgaeHeader.MessageLength {
 
 		rtmpHeader := chunkHead.Clone()
 		//rtmpBody := conn.incompleteRtmpBody[cbh.ChunkStreamID]
 		rtmpBody := new(RtmpBody)
+		/*这是一个完整的rtmp body,所有对应这个message的chunk都已经读取完毕了*/
 		rtmpBody.Payload = conn.incompleteRtmpBody[cbh.ChunkStreamID]
-
+		/*看下这个chunk message header 的类型，然后重新构造一个 rtmp message出来 */
 		msg = GetRtmpMessage(rtmpHeader, rtmpBody)
 
 		delete(conn.incompleteRtmpBody, cbh.ChunkStreamID)
 
 		return msg, nil
 	}
-
+	/*继续读快*/
 	return readChunk(conn)
 }
 
@@ -771,7 +775,7 @@ func readChunkStreamID(conn *RtmpNetConnection, csid uint32) (chunkStreamID uint
 	switch csid {
 	case 0:
 		{
-			u8, err := conn.br.ReadByte()
+			u8, err := conn.br.ReadByte() /*再读取一个字节*/
 			conn.readSeqNum += 1
 			if err != nil {
 				return 0, err
@@ -782,12 +786,13 @@ func readChunkStreamID(conn *RtmpNetConnection, csid uint32) (chunkStreamID uint
 	case 1:
 		{
 			u16 := make([]byte, 2)
+			/*要求读取两个字节*/
 			if _, err = io.ReadFull(conn.br, u16); err != nil {
 				return
 			}
 
 			conn.readSeqNum += 2
-			chunkStreamID = 64 + uint32(u16[0]) + 256*uint32(u16[1])
+			chunkStreamID = 64 + uint32(u16[0]) + 256*uint32(u16[1]) /*第二个字节，左移8位 TODO */
 		}
 	}
 
@@ -806,6 +811,7 @@ func readChunkType(conn *RtmpNetConnection, h *RtmpHeader, chunkType byte) (head
 				return nil, err
 			}
 			conn.readSeqNum += 3
+			/*按照大端的方式，读取字节数组的每个字节，计算得到一个值*/
 			h.ChunkMessgaeHeader.Timestamp = util.BigEndian.Uint24(b) //type = 0的时间戳为绝对时间,其他的都为相对时间
 
 			// Message Length 3 bytes
@@ -856,7 +862,7 @@ func readChunkType(conn *RtmpNetConnection, h *RtmpHeader, chunkType byte) (head
 				return nil, err
 			}
 			conn.readSeqNum += 3
-			h.ChunkMessgaeHeader.MessageLength = util.BigEndian.Uint24(b)
+			h.ChunkMessgaeHeader.MessageLength = util.BigEndian.Uint24(b) /*时间戳都是大端存储的*/
 
 			// Message Type ID 1 bytes
 			v, err := conn.br.ReadByte()

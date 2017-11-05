@@ -22,7 +22,7 @@ type RtmpNetConnection struct {
 	url                string
 	appName            string
 	server             *Server
-	readChunkSize      int
+	readChunkSize      int /*有可能是发送方的控制消息设置的*/
 	writeChunkSize     int
 	createTime         string
 	bandwidth          uint32
@@ -36,7 +36,7 @@ type RtmpNetConnection struct {
 	bw                 *bufio.Writer               // Write
 	brw                *bufio.ReadWriter           // Read and Write,用来握手
 	lock               *sync.Mutex                 // lock
-	incompleteRtmpBody map[uint32][]byte           // 完整的RtmpBody,在网络上是被分成一块一块的,需要将其组装起来
+	incompleteRtmpBody map[uint32][]byte           // 完整的RtmpBody,在网络上是被分成一块一块的,需要将其组装起来 /*TODO 比较重要的map，临时组装各个chunk为一个message用*/
 	rtmpHeader         map[uint32]*RtmpHeader      // RtmpHeader
 	connected          bool                        // 连接是否完成
 	nextStreamID       func(chunkid uint32) uint32 // 下一个流ID
@@ -52,7 +52,7 @@ func gen_next_stream_id(chunkid uint32) uint32 {
 
 func newRtmpNetConnect(conn net.Conn, s *Server) (c *RtmpNetConnection) {
 	c = new(RtmpNetConnection)
-	c.br = bufio.NewReader(conn)
+	c.br = bufio.NewReader(conn) /*创建一个读取底层通信buffer的对象*/
 	c.bw = bufio.NewWriter(conn)
 	c.brw = bufio.NewReadWriter(c.br, c.bw)
 	c.conn = conn
@@ -62,9 +62,9 @@ func newRtmpNetConnect(conn net.Conn, s *Server) (c *RtmpNetConnection) {
 	c.createTime = time.Now().String()
 	c.remoteAddr = conn.RemoteAddr().String()
 	c.nextStreamID = gen_next_stream_id
-	c.readChunkSize = RTMP_DEFAULT_CHUNK_SIZE
+	c.readChunkSize = RTMP_DEFAULT_CHUNK_SIZE /*默认是128个字节*/
 	c.writeChunkSize = RTMP_DEFAULT_CHUNK_SIZE
-	c.rtmpHeader = make(map[uint32]*RtmpHeader)
+	c.rtmpHeader = make(map[uint32]*RtmpHeader) /*只make一次就算给map分配了内存，插入的时候，就可以直接来*/
 	c.incompleteRtmpBody = make(map[uint32][]byte)
 	c.objectEncoding = 0
 	return
