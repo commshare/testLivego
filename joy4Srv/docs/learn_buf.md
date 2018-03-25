@@ -8,7 +8,7 @@
 - buf的数据量大小是size ，是pkt实际数据量的总和
 - buf的count是记录slice里实际有包的数目
 - push的时候，检测count是否与pkt slice预分配大小一致，一致则grow，每次grow，count++
-- 
+- head和tail 一直递增，而又是用来pop和push计算index的，所以这里有一个技巧？
 
 ```
 package pktque
@@ -87,7 +87,8 @@ func (self BufPos) GT(pos BufPos) bool {
 ```
 
 ## BufPos的这种用法
-- 这好像是在实现一种接口一样的？
+- 这好像是在实现运算符重载一样的？
+- 好像是声明了一个类型，并做了一些运算
 
 ```
 type BufPos int
@@ -107,3 +108,26 @@ func (self BufPos) GT(pos BufPos) bool {
 
 ## 确认的问题
 ###1 slice是引用类型么？我看pkt没用用指针
+
+###2 tail和head是怎么用的？设计他们有什么意义？
+- 初始化的时候，都是0
+- push的时候，tail +1 
+- pop的时候 head +1 
+- tail始终指向新插入的元素位置
+-  head和tail是插入和删除的时候用的索引 ！！！！而且他俩一直都是递增的，这个还真是要测试一下。
+
+
+## 技巧
+
+###  计算index用了& 确保一定正确？
+- pop 的位置
+```
+	i := int(self.Head) & (len(self.pkts) - 1)
+
+```
+
+- push的位置
+```$xslt
+
+int(self.Tail)&(len(self.pkts)-1)
+```

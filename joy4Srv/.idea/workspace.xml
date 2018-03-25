@@ -85,8 +85,8 @@
         <entry file="file://$PROJECT_DIR$/docs/learn_buf.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="1853">
-                <caret line="109" column="0" lean-forward="true" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+              <first_editor relative-caret-position="-1668">
+                <caret line="10" column="49" lean-forward="false" selection-start-line="10" selection-start-column="49" selection-end-line="10" selection-end-column="49" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -512,8 +512,8 @@
     <entry file="file://$PROJECT_DIR$/docs/learn_buf.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="1853">
-            <caret line="109" column="0" lean-forward="true" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+          <first_editor relative-caret-position="-1668">
+            <caret line="10" column="49" lean-forward="false" selection-start-line="10" selection-start-column="49" selection-end-line="10" selection-end-column="49" />
             <folding />
           </first_editor>
           <second_editor />
